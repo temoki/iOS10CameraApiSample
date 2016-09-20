@@ -24,6 +24,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>📷</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>🚢</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
