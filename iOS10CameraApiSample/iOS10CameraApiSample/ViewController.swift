@@ -13,7 +13,7 @@ import Photos
 class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     
     @IBOutlet weak var cameraLabel: UILabel!
-    @IBOutlet weak var pixelFormatLabel: UILabel!
+    @IBOutlet weak var imageFormatLabel: UILabel!
     @IBOutlet weak var capturePhotoButton: UIButton!
     
     private var captureSession: AVCaptureSession?
@@ -21,15 +21,15 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     private var imageFormatType: OSType? {
         didSet {
             if let type = imageFormatType {
-                pixelFormatLabel.text = "RAW (\(type))"
+                imageFormatLabel.text = "RAW(\(type))"
             } else {
-                pixelFormatLabel.text = "JPEG"
+                imageFormatLabel.text = "JPEG"
             }
         }
     }
     
     private let deviceTypes: [AVCaptureDeviceType: String]
-        = [.builtInWideAngleCamera: "Wide Angle",
+        = [.builtInWideAngleCamera: "WideAngle",
            .builtInTelephotoCamera: "Telephoto",
            .builtInDuoCamera: "Duo"]
 
@@ -77,11 +77,9 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     private func selectCamera() {
         var devicesOfType = [AVCaptureDeviceType: [AVCaptureDevice]]()
         for (type, _) in deviceTypes {
-            guard let deviceDiscoverySession
-                = AVCaptureDeviceDiscoverySession(deviceTypes: [type],
-                                                  mediaType: AVMediaTypeVideo,
-                                                  position: .unspecified) else {
-                                                    continue
+            guard let deviceDiscoverySession = AVCaptureDeviceDiscoverySession(
+                deviceTypes: [type], mediaType: AVMediaTypeVideo, position: .unspecified) else {
+                    continue
             }
             
             guard let discoveredDevices = deviceDiscoverySession.devices else {
@@ -95,7 +93,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         for (type, devices) in devicesOfType {
             let typeName = deviceTypes[type] ?? "Unknown"
             for device in devices {
-                let name = "\(typeName) [\(device.localizedName ?? "Unknown")]"
+                let name = "\(typeName)(\(device.localizedName ?? "Unknown"))"
                 actionSheet.addAction(UIAlertAction(title: name, style: .default, handler: { [weak self, weak device] (action) in
                     guard let device = device else { return }
                     self?.startCapture(withDevice: device, name: name)
@@ -110,7 +108,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         let actionSheet = UIAlertController(title: "Select Image Format", message: nil, preferredStyle: .actionSheet)
         if let captureOutput = captureSession?.outputs?.first as? AVCapturePhotoOutput {
             for rawPixelFormat in captureOutput.availableRawPhotoPixelFormatTypes {
-                actionSheet.addAction(UIAlertAction(title: "RAW (\(rawPixelFormat))", style: .default, handler: { [weak self] (action) in
+                actionSheet.addAction(UIAlertAction(title: "RAW(\(rawPixelFormat))", style: .default, handler: { [weak self] (action) in
                     self?.imageFormatType = rawPixelFormat.uint32Value
                     }))
             }
@@ -137,10 +135,13 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
             return
         }
         
+        let captureOutput = AVCapturePhotoOutput()
+        captureOutput.isHighResolutionCaptureEnabled = true
+        
         let newCaptureSession = AVCaptureSession()
         newCaptureSession.sessionPreset = AVCaptureSessionPresetPhoto
         newCaptureSession.addInput(deviceInput)
-        newCaptureSession.addOutput(AVCapturePhotoOutput())
+        newCaptureSession.addOutput(captureOutput)
         
         guard let previewLayer = AVCaptureVideoPreviewLayer(session: newCaptureSession) else {
             cameraLabel.text = "Error: AVCaptureVideoPreviewLayer"
@@ -175,67 +176,31 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         captureOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
-    private func saveImage(data: Data) {
-        if let image = UIImage(data: data) {
-            logImage(image: image)
-            UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.image(image:didFinishSavingWithError:contextInfo:)), nil)
+    private func saveImage(data: Data, ext: String) {
+        guard let saveDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first as NSString? else {
+            showAlert(title: "Not found", message: "document directory")
+            return
         }
-    }
-    
-    private func logImage(image: UIImage) {
-        guard let cgImage = image.cgImage else { return }
-        print("[width] \(cgImage.width)")
-        print("[height] \(cgImage.height)")
-        print("[bytesPerRow] \(cgImage.bytesPerRow)")
-        print("[bitsPerPixel] \(cgImage.bitsPerPixel)")
-        print("[bitsPerComponent] \(cgImage.bitsPerComponent)")
-        print("[shouldInterpolate] \(cgImage.shouldInterpolate)")
-        print("[isMask] \(cgImage.isMask)")
-        
-        let alphaInfo: String
-        switch cgImage.alphaInfo {
-        case .none:
-            alphaInfo = "none"
-        case .premultipliedLast:
-            alphaInfo = "premultipliedLast"
-        case .premultipliedFirst:
-            alphaInfo = "premultipliedFirst"
-        case .last:
-            alphaInfo = "last"
-        case .first:
-            alphaInfo = "first"
-        case .noneSkipLast:
-            alphaInfo = "noneSkipLast"
-        case .noneSkipFirst:
-            alphaInfo = "noneSkipFirst"
-        case .alphaOnly:
-            alphaInfo = "alphaOnly"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd-HHmmss-SSS"
+        let date = dateFormatter.string(from: Date())
+        let camera = cameraLabel.text ?? "Unknown-Camera"
+        let format = imageFormatLabel.text ?? "Unknown-Format"
+        guard let fileName = ("\(camera) \(format) \(date)" as NSString).appendingPathExtension(ext) else {
+            showAlert(title: "Error", message: "Cannot create save file name")
+            return
         }
-        print("[alphaInfo] \(alphaInfo)")
+        let filePath = saveDirectory.appendingPathComponent(fileName)
+        let fileURL = URL(fileURLWithPath: filePath)
         
-        let renderingIntent: String
-        switch cgImage.renderingIntent {
-        case .defaultIntent:
-            renderingIntent = "defaultIntent"
-        case .absoluteColorimetric:
-            renderingIntent = "absoluteColorimetric"
-        case .relativeColorimetric:
-            renderingIntent = "relativeColorimetric"
-        case .perceptual:
-            renderingIntent = "perceptual"
-        case .saturation:
-            renderingIntent = "saturation"
+        do {
+            try data.write(to: fileURL)
+        } catch let error as NSError {
+            showErrorAlert(error)
+            return
         }
-        print("[renderingIntent] \(renderingIntent)")
         
-        var bitmapInfo: [String] = []
-        if cgImage.bitmapInfo.contains(.alphaInfoMask) { bitmapInfo.append("alphaInfoMask") }
-        if cgImage.bitmapInfo.contains(.byteOrder16Big) { bitmapInfo.append("byteOrder16Big") }
-        if cgImage.bitmapInfo.contains(.byteOrder16Little) { bitmapInfo.append("byteOrder16Little") }
-        if cgImage.bitmapInfo.contains(.byteOrder32Big) { bitmapInfo.append("byteOrder32Big") }
-        if cgImage.bitmapInfo.contains(.byteOrder32Little) { bitmapInfo.append("byteOrder32Little") }
-        if cgImage.bitmapInfo.contains(.floatComponents) { bitmapInfo.append("floatComponents") }
-        print("[bitmapInfo] \(bitmapInfo)")
+        showAlert(title: "Saved", message: nil)
     }
     
     private func showErrorAlert(_ error: Error) {
@@ -281,7 +246,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
                 return
         }
  
-        saveImage(data: imageData)
+        saveImage(data: imageData, ext: "jpeg")
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput,
@@ -307,7 +272,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
                 return
         }
         
-        saveImage(data: imageData)
+        saveImage(data: imageData, ext: "dng")
     }
     
 

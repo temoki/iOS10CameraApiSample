@@ -26,6 +26,8 @@
 	<string>📷</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>🚢</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
