@@ -28,11 +28,6 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         }
     }
     
-    private let deviceTypes: [AVCaptureDeviceType: String]
-        = [.builtInWideAngleCamera: "WideAngle",
-           .builtInTelephotoCamera: "Telephoto",
-           .builtInDuoCamera: "Duo"]
-
     
     // MARK:- Life Cycle
     
@@ -63,8 +58,8 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         selectCamera()
     }
     
-    @IBAction func selectPixelFormatButtonAction(sender: UIButton) {
-        selectPixelFormatType()
+    @IBAction func selectImageFormatButtonAction(sender: UIButton) {
+        selectImageFormatType()
     }
     
     @IBAction func capturePhotoButtonAction(sender: UIButton) {
@@ -72,39 +67,37 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     }
     
     
-    // MARK:- Private
+    // MARK:- Setup camera
     
     private func selectCamera() {
-        var devicesOfType = [AVCaptureDeviceType: [AVCaptureDevice]]()
-        for (type, _) in deviceTypes {
+        let deviceTypes: [AVCaptureDeviceType: String] =
+            [.builtInWideAngleCamera: "WideAngle", .builtInTelephotoCamera: "Telephoto", .builtInDuoCamera: "Duo"]
+
+        //var devicesOfType = [AVCaptureDeviceType: [AVCaptureDevice]]()
+        let actionSheet = UIAlertController(title: "Select Camera", message: nil, preferredStyle: .actionSheet)
+        for (type, name) in deviceTypes {
             guard let deviceDiscoverySession = AVCaptureDeviceDiscoverySession(
                 deviceTypes: [type], mediaType: AVMediaTypeVideo, position: .unspecified) else {
                     continue
             }
             
-            guard let discoveredDevices = deviceDiscoverySession.devices else {
+            guard let devices = deviceDiscoverySession.devices else {
                 continue
             }
             
-            devicesOfType[type] = discoveredDevices
-        }
-        
-        let actionSheet = UIAlertController(title: "Select Camera", message: nil, preferredStyle: .actionSheet)
-        for (type, devices) in devicesOfType {
-            let typeName = deviceTypes[type] ?? "Unknown"
             for device in devices {
-                let name = "\(typeName)(\(device.localizedName ?? "Unknown"))"
-                actionSheet.addAction(UIAlertAction(title: name, style: .default, handler: { [weak self, weak device] (action) in
-                    guard let device = device else { return }
-                    self?.startCapture(withDevice: device, name: name)
-                }))
+                let deviceName = "\(name)(\(device.localizedName ?? "Unknown"))"
+                actionSheet.addAction(UIAlertAction(title: deviceName, style: .default, handler: { [weak self, weak device] (action) in
+                        guard let device = device else { return }
+                        self?.startCapture(withDevice: device, name: deviceName)
+                    }))
             }
         }
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         present(actionSheet, animated: true, completion: nil)
     }
     
-    private func selectPixelFormatType() {
+    private func selectImageFormatType() {
         let actionSheet = UIAlertController(title: "Select Image Format", message: nil, preferredStyle: .actionSheet)
         if let captureOutput = captureSession?.outputs?.first as? AVCapturePhotoOutput {
             for rawPixelFormat in captureOutput.availableRawPhotoPixelFormatTypes {
@@ -200,11 +193,20 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
             return
         }
         
-        showAlert(title: "Saved", message: nil)
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fileURL)
+            }, completionHandler: { [weak self] (success, error) in
+                if success {
+                    self?.showAlert(title: "Saved", message: nil)
+                } else  {
+                    self?.showErrorAlert(error)
+                }
+            })
+        
     }
     
-    private func showErrorAlert(_ error: Error) {
-        showAlert(title: "Error", message: error.localizedDescription)
+    private func showErrorAlert(_ error: Error?) {
+        showAlert(title: "Error", message: error?.localizedDescription)
     }
     
     private func showAlert(title: String?, message: String?) {

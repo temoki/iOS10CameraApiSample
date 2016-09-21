@@ -49,7 +49,7 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="31s-hb-cVC">
                                 <state key="normal" image="ic_grain_white"/>
                                 <connections>
-                                    <action selector="selectPixelFormatButtonActionWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ceq-v5-Z5b"/>
+                                    <action selector="selectImageFormatButtonActionWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="y6j-E1-M82"/>
                                 </connections>
                             </button>
                         </subviews>
