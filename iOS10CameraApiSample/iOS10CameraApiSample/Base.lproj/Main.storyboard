@@ -19,12 +19,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="n6b-fT-LPR">
-                                <state key="normal" image="ic_switch_camera_white"/>
-                                <connections>
-                                    <action selector="selectCameraButtonActionWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8uA-ai-aSR"/>
-                                </connections>
-                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Camera" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UAH-vQ-rBy">
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -37,6 +31,12 @@
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="n6b-fT-LPR">
+                                <state key="normal" image="ic_switch_camera_white_36pt"/>
+                                <connections>
+                                    <action selector="selectCameraButtonActionWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8uA-ai-aSR"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Krs-qv-jLe">
                                 <constraints>
                                     <constraint firstAttribute="width" constant="100" id="qDf-L2-es8"/>
@@ -47,9 +47,15 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="31s-hb-cVC">
-                                <state key="normal" image="ic_grain_white"/>
+                                <state key="normal" image="ic_grain_white_36pt"/>
                                 <connections>
                                     <action selector="selectImageFormatButtonActionWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="y6j-E1-M82"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mQ2-9b-0Ng">
+                                <state key="normal" image="ic_photo_library_white_36pt"/>
+                                <connections>
+                                    <action selector="photoLibraryButtonActionWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="6bz-43-Jv9"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -57,16 +63,18 @@
                         <constraints>
                             <constraint firstItem="bFv-ul-0TQ" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="Arm-7c-JhZ"/>
                             <constraint firstItem="UAH-vQ-rBy" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="GaN-vR-utp"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="31s-hb-cVC" secondAttribute="bottom" constant="20" id="LgU-iD-34F"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="mQ2-9b-0Ng" secondAttribute="bottom" constant="20" id="MWY-eD-IDt"/>
+                            <constraint firstItem="mQ2-9b-0Ng" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="OBf-Yg-PsU"/>
                             <constraint firstItem="UAH-vQ-rBy" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="QOb-Zp-2qT"/>
+                            <constraint firstItem="n6b-fT-LPR" firstAttribute="leading" secondItem="31s-hb-cVC" secondAttribute="trailing" constant="16" id="VCZ-2Y-E3X"/>
                             <constraint firstItem="bFv-ul-0TQ" firstAttribute="top" secondItem="UAH-vQ-rBy" secondAttribute="bottom" constant="8" id="VIR-F0-vkd"/>
                             <constraint firstItem="bFv-ul-0TQ" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="Z2u-kF-uMc"/>
                             <constraint firstItem="Krs-qv-jLe" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="cpb-uZ-3Ev"/>
-                            <constraint firstItem="31s-hb-cVC" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="20" id="dQd-Qi-5Y9"/>
-                            <constraint firstItem="n6b-fT-LPR" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" constant="-20" id="dof-ik-Nzv"/>
+                            <constraint firstItem="n6b-fT-LPR" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="dof-ik-Nzv"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="n6b-fT-LPR" secondAttribute="bottom" constant="20" id="f4Y-BC-n3R"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Krs-qv-jLe" secondAttribute="bottom" constant="20" id="hcO-mO-Sag"/>
                             <constraint firstAttribute="trailingMargin" secondItem="UAH-vQ-rBy" secondAttribute="trailing" id="tIZ-77-HWP"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="31s-hb-cVC" secondAttribute="bottom" constant="20" id="xqA-gk-Ecx"/>
                         </constraints>
                     </view>
                     <connections>
@@ -82,7 +90,8 @@
     </scenes>
     <resources>
         <image name="ic_camera_white_48pt" width="48" height="48"/>
-        <image name="ic_grain_white" width="24" height="24"/>
-        <image name="ic_switch_camera_white" width="24" height="24"/>
+        <image name="ic_grain_white_36pt" width="36" height="36"/>
+        <image name="ic_photo_library_white_36pt" width="36" height="36"/>
+        <image name="ic_switch_camera_white_36pt" width="36" height="36"/>
     </resources>
 </document>

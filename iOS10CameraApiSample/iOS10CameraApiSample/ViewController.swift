@@ -10,21 +10,22 @@ import UIKit
 import AVFoundation
 import Photos
 
-class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
+class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    // MARK:- IBOutlets
     
     @IBOutlet weak var cameraLabel: UILabel!
     @IBOutlet weak var imageFormatLabel: UILabel!
     @IBOutlet weak var capturePhotoButton: UIButton!
     
+    
+    // MARK:- Properties
+    
     private var captureSession: AVCaptureSession?
     
     private var imageFormatType: OSType? {
         didSet {
-            if let type = imageFormatType {
-                imageFormatLabel.text = "RAW(\(type))"
-            } else {
-                imageFormatLabel.text = "JPEG"
-            }
+            imageFormatLabel.text = imageFormatName(ofType: imageFormatType)
         }
     }
     
@@ -37,7 +38,11 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        selectCamera()
+        if let captureSession = self.captureSession {
+            captureSession.startRunning()
+        } else {
+            selectCamera()
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -59,58 +64,71 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     }
     
     @IBAction func selectImageFormatButtonAction(sender: UIButton) {
-        selectImageFormatType()
+        selectImageFormat()
     }
     
     @IBAction func capturePhotoButtonAction(sender: UIButton) {
         capturePhoto()
     }
     
+    @IBAction func photoLibraryButtonAction(sender: UIButton) {
+        selectPhoto()
+    }
     
-    // MARK:- Setup camera
+    
+    // MARK:- Setup Camera
     
     private func selectCamera() {
-        let deviceTypes: [AVCaptureDeviceType: String] =
-            [.builtInWideAngleCamera: "WideAngle", .builtInTelephotoCamera: "Telephoto", .builtInDuoCamera: "Duo"]
-
-        //var devicesOfType = [AVCaptureDeviceType: [AVCaptureDevice]]()
         let actionSheet = UIAlertController(title: "Select Camera", message: nil, preferredStyle: .actionSheet)
-        for (type, name) in deviceTypes {
-            guard let deviceDiscoverySession = AVCaptureDeviceDiscoverySession(
-                deviceTypes: [type], mediaType: AVMediaTypeVideo, position: .unspecified) else {
-                    continue
-            }
-            
-            guard let devices = deviceDiscoverySession.devices else {
+        
+        let deviceTypes: [AVCaptureDeviceType: String] = [.builtInWideAngleCamera: "Wide-Angle",
+                                                          .builtInTelephotoCamera: "Telephoto",
+                                                          .builtInDuoCamera: "Duo"]
+        for (deviceType, deviceTypeName) in deviceTypes {
+            let discoverySession = AVCaptureDeviceDiscoverySession(
+                deviceTypes: [deviceType], mediaType: AVMediaTypeVideo, position: .unspecified)
+            guard let discoveredDevices = discoverySession?.devices else {
                 continue
             }
             
-            for device in devices {
-                let deviceName = "\(name)(\(device.localizedName ?? "Unknown"))"
-                actionSheet.addAction(UIAlertAction(title: deviceName, style: .default, handler: { [weak self, weak device] (action) in
-                        guard let device = device else { return }
+            for device in discoveredDevices {
+                let deviceName = "\(deviceTypeName)(\(device.localizedName ?? "Unknown"))"
+                actionSheet.addAction(UIAlertAction(title: deviceName, style: .default, handler: { [weak self] (action) in
                         self?.startCapture(withDevice: device, name: deviceName)
                     }))
             }
         }
+        
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         present(actionSheet, animated: true, completion: nil)
     }
     
-    private func selectImageFormatType() {
+    private func selectImageFormat() {
         let actionSheet = UIAlertController(title: "Select Image Format", message: nil, preferredStyle: .actionSheet)
+        
         if let captureOutput = captureSession?.outputs?.first as? AVCapturePhotoOutput {
             for rawPixelFormat in captureOutput.availableRawPhotoPixelFormatTypes {
-                actionSheet.addAction(UIAlertAction(title: "RAW(\(rawPixelFormat))", style: .default, handler: { [weak self] (action) in
-                    self?.imageFormatType = rawPixelFormat.uint32Value
+                let type = rawPixelFormat.uint32Value as OSType
+                let name = imageFormatName(ofType: type)
+                actionSheet.addAction(UIAlertAction(title: name, style: .default, handler: { [weak self] (action) in
+                    self?.imageFormatType = type
                     }))
             }
         }
-        actionSheet.addAction(UIAlertAction(title: "JPEG", style: .default, handler: { [weak self] (action) in
+        
+        let nonRawName = imageFormatName(ofType: nil)
+        actionSheet.addAction(UIAlertAction(title: nonRawName, style: .default, handler: { [weak self] (action) in
             self?.imageFormatType = nil
             }))
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         present(actionSheet, animated: true, completion: nil)
+    }
+    
+    private func imageFormatName(ofType type: OSType?) -> String {
+        if let type = type {
+            return "RAW(\(type))"
+        }
+        return "JPEG"
     }
     
     private func startCapture(withDevice device: AVCaptureDevice, name: String) {
@@ -124,7 +142,8 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         
         cameraLabel.text = name
         guard let deviceInput = try? AVCaptureDeviceInput(device: device) else {
-            cameraLabel.text = "Error: AVCaptureDeviceInput"
+            showErrorAlert(message: "Failed to create AVCaptureDeviceInput instance.")
+            cameraLabel.text = nil
             return
         }
         
@@ -136,18 +155,25 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         newCaptureSession.addInput(deviceInput)
         newCaptureSession.addOutput(captureOutput)
         
-        guard let previewLayer = AVCaptureVideoPreviewLayer(session: newCaptureSession) else {
-            cameraLabel.text = "Error: AVCaptureVideoPreviewLayer"
-            return
+        if let previewLayers = (view.layer.sublayers?.map { $0 as? AVCaptureVideoPreviewLayer }), previewLayers.isEmpty {
+            previewLayers.forEach { $0?.session = newCaptureSession }
+        } else {
+            if let previewLayer = AVCaptureVideoPreviewLayer(session: newCaptureSession) {
+                previewLayer.frame = view.bounds
+                view.layer.addSublayer(previewLayer)
+            } else {
+                showErrorAlert(message: "Failed to create AVCaptureVideoPreviewLayer instance.")
+                cameraLabel.text = nil
+            }
         }
-        previewLayer.frame = view.bounds
-        view.layer.addSublayer(previewLayer)
-        
         
         newCaptureSession.startRunning()
         captureSession = newCaptureSession
         capturePhotoButton.isEnabled = true
     }
+    
+    
+    // MARK:- Capture Photo
     
     private func capturePhoto() {
         guard let captureSession = self.captureSession, captureSession.isRunning else {
@@ -169,27 +195,39 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         captureOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
-    private func saveImage(data: Data, ext: String) {
-        guard let saveDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first as NSString? else {
-            showAlert(title: "Not found", message: "document directory")
-            return
-        }
+    private func getSaveDirectory() -> String? {
+        return NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
+    }
+    
+    private func getSaveFileName(withExtension ext: String) -> String? {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd-HHmmss-SSS"
+        
         let date = dateFormatter.string(from: Date())
         let camera = cameraLabel.text ?? "Unknown-Camera"
         let format = imageFormatLabel.text ?? "Unknown-Format"
-        guard let fileName = ("\(camera) \(format) \(date)" as NSString).appendingPathExtension(ext) else {
-            showAlert(title: "Error", message: "Cannot create save file name")
+        
+        return ("\(camera)_\(format)_\(date)" as NSString).appendingPathExtension(ext)
+    }
+    
+    private func saveImage(data: Data, ext: String) {
+        guard let saveDirectory = getSaveDirectory() else {
+            showErrorAlert(message: "The directory to save image is not found.")
             return
         }
-        let filePath = saveDirectory.appendingPathComponent(fileName)
+
+        guard let fileName = getSaveFileName(withExtension: ext) else {
+            showErrorAlert(message: "Cannot get file name to save image.")
+            return
+        }
+        
+        let filePath = (saveDirectory as NSString).appendingPathComponent(fileName)
         let fileURL = URL(fileURLWithPath: filePath)
         
         do {
             try data.write(to: fileURL)
         } catch let error as NSError {
-            showErrorAlert(error)
+            showErrorAlert(error: error)
             return
         }
         
@@ -197,16 +235,33 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
             PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fileURL)
             }, completionHandler: { [weak self] (success, error) in
                 if success {
-                    self?.showAlert(title: "Saved", message: nil)
+                    self?.showAlert(title: "Saved", message: filePath)
                 } else  {
-                    self?.showErrorAlert(error)
+                    self?.showErrorAlert(error: error)
                 }
             })
-        
     }
     
-    private func showErrorAlert(_ error: Error?) {
-        showAlert(title: "Error", message: error?.localizedDescription)
+    
+    // MARK:- Photo Library
+    
+    private func selectPhoto() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .savedPhotosAlbum
+        imagePicker.allowsEditing = false
+        imagePicker.delegate = self
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    
+    // MARK:- Utilities
+    
+    private func showErrorAlert(error: Error?) {
+        showErrorAlert(message: error?.localizedDescription)
+    }
+    
+    private func showErrorAlert(message: String?) {
+        showAlert(title: "Error", message: message)
     }
     
     private func showAlert(title: String?, message: String?) {
@@ -215,13 +270,6 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
         present(alert, animated: true, completion: nil)
     }
     
-    func image(image: UIImage, didFinishSavingWithError error: NSError!, contextInfo: UnsafeMutableRawPointer) {
-        if let error = error {
-            showErrorAlert(error)
-        } else {
-            showAlert(title: "Saved.", message: nil)
-        }
-    }
     
     // MARK:- AVCapturePhotoCaptureDelegate
     
@@ -231,20 +279,20 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
                  resolvedSettings: AVCaptureResolvedPhotoSettings,
                  bracketSettings: AVCaptureBracketedStillImageSettings?,
                  error: Error?) {
-        print(#function)
+
         if let error = error {
-            showErrorAlert(error)
+            showErrorAlert(error: error)
             return
         }
         
-        guard let photoSampleBuffer = photoSampleBuffer else {
-            showAlert(title: "Error", message: "photoSampleBuffer is nil.")
+        guard let buffer = photoSampleBuffer else {
+            showErrorAlert(message: "photoSampleBuffer is nil.")
             return
         }
         
         guard let imageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(
-            forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
-                showAlert(title: "Error", message: "Failed to create JPEG data.")
+            forJPEGSampleBuffer: buffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
+                showErrorAlert(message: "Failed to create jpeg data.")
                 return
         }
  
@@ -257,26 +305,41 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate {
                  resolvedSettings: AVCaptureResolvedPhotoSettings,
                  bracketSettings: AVCaptureBracketedStillImageSettings?,
                  error: Error?) {
-        print(#function)
+
         if let error = error {
-            showErrorAlert(error)
+            showErrorAlert(error: error)
             return
         }
         
-        guard let rawSampleBuffer = rawSampleBuffer else {
-            showAlert(title: "Error", message: "rawSampleBuffer is nil.")
+        guard let buffer = rawSampleBuffer else {
+            showErrorAlert(message: "rawSampleBuffer is nil.")
             return
         }
 
         guard let imageData = AVCapturePhotoOutput.dngPhotoDataRepresentation(
-            forRawSampleBuffer: rawSampleBuffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
-                showAlert(title: "Error", message: "Failed to create RAW(DNG) data.")
+            forRawSampleBuffer: buffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
+                showErrorAlert(message: "Failed to create RAW(DNG) data.")
                 return
         }
         
         saveImage(data: imageData, ext: "dng")
     }
     
+    
+    // MARK:- UIImagePickerControllerDelegate
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        picker.dismiss(animated: true) { [weak self] in
+            var text = "Information"
+            if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+                text += "\nSize = \(image.size)"
+            }
+            if let url = info[UIImagePickerControllerReferenceURL] as? URL {
+                text += "\nURL = \(url.absoluteString)"
+            }
+            self?.showAlert(title: "Image", message: text)
+        }
+    }
 
 }
 
