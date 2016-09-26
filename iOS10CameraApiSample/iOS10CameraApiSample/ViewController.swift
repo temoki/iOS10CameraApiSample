@@ -296,7 +296,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
                 return
         }
  
-        saveImage(data: imageData, ext: "jpeg")
+        saveImage(data: imageData, ext: "jpg")
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput,
