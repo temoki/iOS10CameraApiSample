@@ -270,6 +270,116 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
         present(alert, animated: true, completion: nil)
     }
     
+    private func printSampleBuffer(buffer: CMSampleBuffer) {
+        print("---[CMSampleBuffer]---")
+        print("Is valid = \(CMSampleBufferIsValid(buffer))")
+        print("Data is ready = \(CMSampleBufferDataIsReady(buffer))")
+        CMSampleBufferGetTotalSampleSize(buffer)
+        print("Duration = \(CMSampleBufferGetDuration(buffer))")
+        print("Output duration = \(CMSampleBufferGetOutputDuration(buffer))")
+        print("Decode time stamp = \(CMSampleBufferGetDecodeTimeStamp(buffer))")
+        print("Output decode time stamp = \(CMSampleBufferGetOutputDecodeTimeStamp(buffer))")
+        print("Presentation time stamp = \(CMSampleBufferGetPresentationTimeStamp(buffer))")
+        print("Output presentation time stamp = \(CMSampleBufferGetOutputPresentationTimeStamp(buffer))")
+        
+        //CMSampleBufferGetOutputSampleTimingInfoArray
+        //CMSampleBufferGetAudioStreamPacketDescriptions
+        //CMSampleBufferGetAudioStreamPacketDescriptionsPtr
+        //CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer
+        
+        let numSamples = CMSampleBufferGetNumSamples(buffer)
+        print("Num samples = \(numSamples)")
+        for sampleIndex in 0 ..< numSamples {
+            print("Sample[\(sampleIndex)] size = \(CMSampleBufferGetSampleSize(buffer, sampleIndex))")
+            //CMSampleBufferGetSampleSizeArray
+            //CMSampleBufferGetSampleTimingInfo
+            //CMSampleBufferGetSampleAttachmentsArray
+            //CMSampleBufferGetSampleTimingInfoArray(
+        }
+        
+        if let formatDescription = CMSampleBufferGetFormatDescription(buffer) {
+            printFormatDescription(desc: formatDescription)
+        } else {
+            print("Format description = nil")
+        }
+
+        if let blockBuffer = CMSampleBufferGetDataBuffer(buffer) {
+            printBlockBuffer(buffer: blockBuffer)
+        } else {
+            print("Block buffer = nil")
+        }
+        
+        if let pixelBuffer = CMSampleBufferGetImageBuffer(buffer) {
+            printPixelBuffer(buffer: pixelBuffer)
+        } else {
+            print("Image buffer = nil")
+        }
+    }
+    
+    private func printPixelBuffer(buffer: CVPixelBuffer) {
+        print("Image buffer =>")
+        print("  Width = \(CVPixelBufferGetWidth(buffer))")
+        print("  Height = \(CVPixelBufferGetHeight(buffer))")
+        print("  Data size = \(CVPixelBufferGetDataSize(buffer))")
+        print("  Bytes per row = \(CVPixelBufferGetBytesPerRow(buffer))")
+        print("  Pixel format type = \(CVPixelBufferGetPixelFormatType(buffer))")
+        
+        let isPlanar = CVPixelBufferIsPlanar(buffer)
+        print("  Is planar = \(isPlanar)")
+        if isPlanar {
+            let planeCount = CVPixelBufferGetPlaneCount(buffer)
+            print("  Plane count = \(planeCount)")
+            
+            for planeIndex in 0 ..< planeCount {
+                print("  Plane [\(planeIndex)]")
+                print("    Width = \(CVPixelBufferGetWidthOfPlane(buffer, planeIndex))")
+                print("    Height = \(CVPixelBufferGetHeightOfPlane(buffer, planeIndex))")
+                print("    Bytes per row = \(CVPixelBufferGetBytesPerRowOfPlane(buffer, planeIndex))")
+            }
+        }
+    }
+    
+    private func printBlockBuffer(buffer: CMBlockBuffer) {
+        print("Block buffer =>")
+        print("  Is empty = \(CMBlockBufferIsEmpty(buffer))")
+        print("  Data length = \(CMBlockBufferGetDataLength(buffer))")
+    }
+    
+    private func printFormatDescription(desc: CMFormatDescription) {
+        print("Format description =>")
+        let mediaTypeStr: String
+        switch CMFormatDescriptionGetMediaType(desc) {
+        case kCMMediaType_Video:
+            mediaTypeStr = "Video" // 🌟
+        case kCMMediaType_Audio:
+            mediaTypeStr = "Audio"
+        case kCMMediaType_Muxed:
+            mediaTypeStr = "Muxed"
+        case kCMMediaType_Text:
+            mediaTypeStr = "Text"
+        case kCMMediaType_ClosedCaption:
+            mediaTypeStr = "ClosedCaption"
+        case kCMMediaType_Subtitle:
+            mediaTypeStr = "Subtitle"
+        case kCMMediaType_TimeCode:
+            mediaTypeStr = "TimeCode"
+        case kCMMediaType_Metadata:
+            mediaTypeStr = "Metadata"
+        default:
+            mediaTypeStr = "Unknown"
+        }
+        print("  Media type = \(mediaTypeStr)")
+        
+        let subtype = CMFormatDescriptionGetMediaSubType(desc) as UInt32
+        let subtypeCharacters: [unichar] = [unichar((subtype >> 24) & 0xFF),
+                                            unichar((subtype >> 16) & 0xFF),
+                                            unichar((subtype >> 8) & 0xFF),
+                                            unichar((subtype >> 0) & 0xFF)]
+        print("  Media sub type = \(NSString(characters: subtypeCharacters, length: 4) as String)")
+
+        print("  Extensions = \(CMFormatDescriptionGetExtensions(desc) as? NSDictionary)")
+    }
+    
     
     // MARK:- AVCapturePhotoCaptureDelegate
     
@@ -289,6 +399,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
             showErrorAlert(message: "photoSampleBuffer is nil.")
             return
         }
+        printSampleBuffer(buffer: buffer)
         
         guard let imageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(
             forJPEGSampleBuffer: buffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
@@ -315,6 +426,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
             showErrorAlert(message: "rawSampleBuffer is nil.")
             return
         }
+        printSampleBuffer(buffer: buffer)
 
         guard let imageData = AVCapturePhotoOutput.dngPhotoDataRepresentation(
             forRawSampleBuffer: buffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
