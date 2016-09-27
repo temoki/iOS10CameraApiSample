@@ -6,7 +6,7 @@
 
 ### @temoki
 
-![profile](images/profile.jpg)
+![profile](SlideImages/profile.jpg)
 
 * PL : エンジニア = 7 : 3
 * iOS : Android = 9 : 1
@@ -14,4 +14,3 @@
 * 雰囲気メガネ アプリ
 
 ---
- 
