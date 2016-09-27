@@ -38,8 +38,6 @@ New iPhone Camera Hack!
  二つのカメラが一つになって撮影します。
 
 * より明るくなった広角カメラ F1.8 (28mm相当)
-
-
 * 新しく加わった望遠カメラ F2.8 (56mm相当)
 
 
@@ -49,12 +47,8 @@ New iPhone Camera Hack!
 
 * 📱 初の光学ズーム 2x
   * 👉 ~~デジタルズームと合わせて10x~~
-
-
 * 二つのセンサー情報をフル活用したシーン認識
   * 👉 最適な写真を撮影
-
-
 * ポートレートモード※ での被写界深度エフェクト
   * 👉 一眼レフカメラのようなボケを表現
 
@@ -66,8 +60,6 @@ New iPhone Camera Hack!
 
 * 広色域キャプチャー
   * 👉 従来の sRGB より広い色空間の P3 で撮影
-
-
 * 広色域ディスプレイ
   * 👉 True Tone ディスプレイで P3 色空間を再現
 
@@ -82,13 +74,9 @@ iOS 10 Camera API
 ## Camera API Diff
 
 * **Dual Camera & Camera Discovery**
-
-
 * **New Photo Capture API**
   * **RAW format**
   * Live Photos
-
-
 * Wide Color
 
 ---
