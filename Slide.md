@@ -78,35 +78,35 @@ iOS 10 Camera API
 ---
 ## Dual Camera & Camera Discovery
 
-* `AVCaptureDeviceDiscoverySession` *NEW!*
+* `AVCaptureDeviceDiscoverySession` - *NEW!*
 
 ```swift
-let session = AVCaptureDeviceDiscoverySession(
-                deviceTypes: [.builtInDuoCamera],
-                mediaType: AVMediaTypeVideo,
-                position: .back)
+let discoverySession = AVCaptureDeviceDiscoverySession(
+                        deviceTypes: [.builtInDuoCamera],
+                        mediaType: AVMediaTypeVideo,
+                        position: .back)
 
-let devices: [AVCaptureDevice]? = session?.devices
+let devices: [AVCaptureDevice]? = discoverySession?.devices
 ```
 
 ---
 ## Dual Camera & Camera Discovery
 
-* `AVCaptureDeviceType` *NEW!*
+* `AVCaptureDeviceType` - *NEW!*
   * `.builtInWideAngleCamera`
   * `.builtInTelephotoCamera`
   * `.builtInDuoCamera`
 
 ---
-## 二つのカメラで同時キャプチャーできる！？
+## 同時キャプチャーできる！？
 
-できたら被写界深度エフェクトみたいに、視差から立体認識してゴニョゴニョ...
+できたら被写界深度エフェクトみたいに
+
+視差から立体認識してゴニョゴニョ...
 
 ---
 ## できません 😭
 
-というのを確認する
-
 ---
 ## New Photo Capture API
 
@@ -114,8 +114,8 @@ let devices: [AVCaptureDevice]? = session?.devices
 
 ## New Photo Capture API
 
-* `AVCaptureStillImageOutput` *Deprecated*
-* `AVCapturePhotoOutput` *NEW!*
+* `AVCaptureStillImageOutput` - *Deprecated*
+* `AVCapturePhotoOutput` - *NEW!*
   * **RAW Format Capture**
   * Live Photo Capture
 
