@@ -9,6 +9,7 @@
 import UIKit
 import AVFoundation
 import Photos
+import CoreImage
 
 class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -126,7 +127,7 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
     
     private func imageFormatName(ofType type: OSType?) -> String {
         if let type = type {
-            return "RAW(\(type))"
+            return "RAW(\(type)-\(uint32To4CharsString(type as UInt32)))"
         }
         return "JPEG"
     }
@@ -147,13 +148,11 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
             return
         }
         
-        let captureOutput = AVCapturePhotoOutput()
-        captureOutput.isHighResolutionCaptureEnabled = true
         
         let newCaptureSession = AVCaptureSession()
         newCaptureSession.sessionPreset = AVCaptureSessionPresetPhoto
         newCaptureSession.addInput(deviceInput)
-        newCaptureSession.addOutput(captureOutput)
+        newCaptureSession.addOutput(AVCapturePhotoOutput())
         
         if let previewLayers = (view.layer.sublayers?.map { $0 as? AVCaptureVideoPreviewLayer }), previewLayers.isEmpty {
             previewLayers.forEach { $0?.session = newCaptureSession }
@@ -184,12 +183,24 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
         }
         
         let photoSettings: AVCapturePhotoSettings
+        
+        // Image format
         if let imageFormatType = self.imageFormatType {
             // RAW
             photoSettings = AVCapturePhotoSettings(rawPixelFormatType: imageFormatType)
         } else {
             // JPEG
             photoSettings = AVCapturePhotoSettings()
+        }
+        photoSettings.isHighResolutionPhotoEnabled = true
+        
+        // Preview format type
+        let previewPixelTypes = photoSettings.availablePreviewPhotoPixelFormatTypes
+        previewPixelTypes.forEach { print("\(self.uint32To4CharsString($0.uint32Value))") }
+        if let previewPixelType = previewPixelTypes.first {
+            photoSettings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: previewPixelType,
+                                                kCVPixelBufferWidthKey as String: 1600,
+                                                kCVPixelBufferHeightKey as String: 1600]
         }
         
         captureOutput.capturePhoto(with: photoSettings, delegate: self)
@@ -240,6 +251,36 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
                     self?.showErrorAlert(error: error)
                 }
             })
+        
+        /*
+        if ext == "dng" {
+            if let rawFilter = CIFilter(imageURL: fileURL, options: nil) {
+                if let outputImage = rawFilter.outputImage {
+                    let context: CIContext = CIContext(options: [kCIContextCacheIntermediates: false, kCIContextPriorityRequestLow: true])
+                    let jpegURL = URL(fileURLWithPath: filePath + ".jpg")
+                    let colorSpaceP3 = CGColorSpace(name: CGColorSpace.displayP3)!
+                    do {
+                        try context.writeJPEGRepresentation(of: outputImage, to: jpegURL, colorSpace: colorSpaceP3,
+                                                            options: [String(kCGImageDestinationLossyCompressionQuality): 1.0])
+                    } catch let error as NSError {
+                        showErrorAlert(error: error)
+                        return
+                    }
+                    
+                    PHPhotoLibrary.shared().performChanges({
+                        PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: jpegURL)
+                        }, completionHandler: { [weak self] (success, error) in
+                            if success {
+                                self?.showAlert(title: "Saved [JPEG]", message: filePath)
+                            } else  {
+                                self?.showErrorAlert(error: error)
+                            }
+                        })
+                }
+            }
+        }
+ */
+
     }
     
     
@@ -322,7 +363,9 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
         print("  Height = \(CVPixelBufferGetHeight(buffer))")
         print("  Data size = \(CVPixelBufferGetDataSize(buffer))")
         print("  Bytes per row = \(CVPixelBufferGetBytesPerRow(buffer))")
-        print("  Pixel format type = \(CVPixelBufferGetPixelFormatType(buffer))")
+        let type = CVPixelBufferGetPixelFormatType(buffer) as UInt32
+        let typeStr = uint32To4CharsString(type)
+        print("  Pixel format type = \(type) => \(typeStr)")
         
         let isPlanar = CVPixelBufferIsPlanar(buffer)
         print("  Is planar = \(isPlanar)")
@@ -371,13 +414,18 @@ class ViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePi
         print("  Media type = \(mediaTypeStr)")
         
         let subtype = CMFormatDescriptionGetMediaSubType(desc) as UInt32
-        let subtypeCharacters: [unichar] = [unichar((subtype >> 24) & 0xFF),
-                                            unichar((subtype >> 16) & 0xFF),
-                                            unichar((subtype >> 8) & 0xFF),
-                                            unichar((subtype >> 0) & 0xFF)]
-        print("  Media sub type = \(NSString(characters: subtypeCharacters, length: 4) as String)")
+        let subtypeStr = uint32To4CharsString(subtype)
+        print("  Media sub type = \(subtype) => \(subtypeStr)")
 
         print("  Extensions = \(CMFormatDescriptionGetExtensions(desc) as? NSDictionary)")
+    }
+    
+    private func uint32To4CharsString(_ value: UInt32) -> String {
+        let characters: [unichar] = [unichar((value >> 24) & 0xFF),
+                                     unichar((value >> 16) & 0xFF),
+                                     unichar((value >> 8) & 0xFF),
+                                     unichar((value >> 0) & 0xFF)]
+        return NSString(characters: characters, length: 4) as String
     }
     
     
