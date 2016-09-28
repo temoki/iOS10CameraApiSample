@@ -108,14 +108,14 @@ let devices: [AVCaptureDevice]? = discoverySession?.devices
 ## できません 😭
 
 ---
-## `.builtInDuoCamera`
+## DUO CAMERA
 
 * 二つのカメラで最適化された一枚の写真だけを出力
 * 撮影に細かいコントロールはできない (全てお任せ)
 * 後述の RAW フォーマット撮影も不可能
 
 ---
-## `.builtInWideAngleCamera` & `.builtInTelephotoCamera`
+## WIDE ANGLE CAMERA & TELEPHOTO CAMERA`
 
 ```swift
 let captureSession = AVCaptureSession()
@@ -124,7 +124,7 @@ captureSession.addInput(telephotoCameraDevice)
 ```
 👇 **Terminating app due to uncaught exception !!!**
 
->  Multiple audio/video AVCaptureInputs are not currently supported'
+>  Multiple audio/video AVCaptureInputs are not currently supported
 
 ---
 ## New Photo Capture API
@@ -213,6 +213,9 @@ func capture(_ captureOutput: AVCapturePhotoOutput,
 ## RAW データをそのまま触る
 
 * `CVPixelBuffer` にバイトデータとして含まれる
+* iPhone 7 Plus で試すとフォーマットは `OSType(“rgg4”)`
+  * `kCVPixelFormatType_14Bayer_RGGB`
+  * Bayer 14-bit Little-Endian, packed in 16-bits, ordered R G R G...   alternating with G B G B...
 
 ```swift
 // CVPixelBuffer?
@@ -236,7 +239,7 @@ let dngData = AVCapturePhotoOutput.dngPhotoDataRepresentation(
 ---
 ## RAW データを現像する
 
-* `import CoreImage`
+* `import CoreImage.framework`
 * RAW データから `CIFilter` オブジェクトを作成
 * RAW 現像用のオプションを指定
 * `CIFilter` から `CIImage` を生成
@@ -255,7 +258,6 @@ let image: CIImage? = rawFilter?.outputImage
 ```
 
 ---
-## 🆕 📱 📷 👉 😎
+## まとめ
 
----
-## 🔚
+## 🆕 📱 📷 👉 😎
