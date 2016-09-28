@@ -115,7 +115,7 @@ let devices: [AVCaptureDevice]? = discoverySession?.devices
 * 後述の RAW フォーマット撮影も不可能
 
 ---
-## WIDE ANGLE CAMERA & TELEPHOTO CAMERA`
+## WIDE ANGLE & TELEPHOTO
 
 ```swift
 let captureSession = AVCaptureSession()
@@ -213,7 +213,7 @@ func capture(_ captureOutput: AVCapturePhotoOutput,
 ## RAW データをそのまま触る
 
 * `CVPixelBuffer` にバイトデータとして含まれる
-* iPhone 7 Plus で試すとフォーマットは `OSType(“rgg4”)`
+* iPhone 7 Plus だと `“rgg4”` というフォーマット
   * `kCVPixelFormatType_14Bayer_RGGB`
   * Bayer 14-bit Little-Endian, packed in 16-bits, ordered R G R G...   alternating with G B G B...
 
