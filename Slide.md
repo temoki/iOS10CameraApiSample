@@ -110,8 +110,8 @@ let devices: [AVCaptureDevice]? = discoverySession?.devices
 ---
 ## `.builtInDuoCamera`
 
-* 二つのカメラで最適化された一枚の写真だけが出力される
-* 撮影に細かいコントロールはできない (お任せ)
+* 二つのカメラで最適化された一枚の写真だけを出力
+* 撮影に細かいコントロールはできない (全てお任せ)
 * 後述の RAW フォーマット撮影も不可能
 
 ---
@@ -167,7 +167,7 @@ captureSession.addInput(telephotoCameraDevice)
 * iPhone SE
 * iPad Pro 9.7 inch
 
-※ ただしバックカメラのみ
+※ ただし iSight (Back) カメラのみ
 
 ---
 ## RAW 撮影ができるアプリ
@@ -182,7 +182,9 @@ captureSession.addInput(telephotoCameraDevice)
 * 🆗 `AVFoundation`, `AVCapturePhotoOutput`
 
 ---
-## `AVCapturePhotoOutput` で RAW 撮影
+## API で RAW 撮影
+
+* `AVCapturePhotoOutput`
 
 ```swift
 let rawFormat = photoOutput.availableRawPhotoPixelFormatTypes.first!.uint32Value
@@ -191,7 +193,10 @@ photoOutput.capturePhoto(with: settings, delegate: self)
 ```
 
 ---
-## `AVCapturePhotoCaptureDelegate`
+## API で RAW 撮影後
+
+* `AVCapturePhotoCaptureDelegate`
+* `rawSampleBuffer: CMSampleBuffer?` から RAW データにアクセス可能
 
 ```swift
 func capture(_ captureOutput: AVCapturePhotoOutput,
@@ -204,17 +209,15 @@ func capture(_ captureOutput: AVCapturePhotoOutput,
 }
 ```
 
-`rawSampleBuffer` から RAW データにアクセス可能
-
 ---
 ## RAW データをそのまま触る
 
+* `CVPixelBuffer` にバイトデータとして含まれる
+
 ```swift
-// CVPixelBuffer
+// CVPixelBuffer?
 let pixelBuffer = CMSampleBufferGetImageBuffer(rawSampleBuffer!)
 ```
-
-`CVPixelBuffer` にバイトデータとして含まれる
 
 ---
 ## RAW データを保存する
@@ -224,22 +227,35 @@ let pixelBuffer = CMSampleBufferGetImageBuffer(rawSampleBuffer!)
 * **D** igital - **N** e **G** ative
 
 ```swift
-let dngData: Data? = AVCapturePhotoOutput.dngPhotoDataRepresentation(
-                      forRawSampleBuffer: rawSampleBuffer!,
-                      previewPhotoSampleBuffer: previewPhotoSampleBuffer)
-```
-
----
-## RAW データを読み込む
-
-* Core Image を使って CIImage を生成可能
-
-```swift
-let image: CIImage? = CIFilter(imageURL: fileURL, options: nil)?.outputImage
+// Data?
+let dngData = AVCapturePhotoOutput.dngPhotoDataRepresentation(
+                forRawSampleBuffer: rawSampleBuffer!,
+                previewPhotoSampleBuffer: previewPhotoSampleBuffer)
 ```
 
 ---
 ## RAW データを現像する
 
+* `import CoreImage`
+* RAW データから `CIFilter` オブジェクトを作成
+* RAW 現像用のオプションを指定
+* `CIFilter` から `CIImage` を生成
+
+```swift
+let rawFilter = CIFilter(imageURL: rawURL, options: nil)
+
+// Noise Reduction
+let nrKey = kCIInputLuminanceNoiseReductionAmountKey
+if let nr = rawFilter?.value(forKey: nrKey) {
+    rawFilter.setValue(nr.doubleValue + 0.1, forKey: nrKey)
+}
+
+let image: CIImage? = rawFilter?.outputImage
+// -> CGImage, UIImage, JPEG, ...
+```
+
 ---
-To be continued.
+## 🆕 📱 📷 👉 😎
+
+---
+## 🔚
