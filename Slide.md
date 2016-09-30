@@ -2,6 +2,8 @@
 
 New iPhone Camera Hack!
 
+_Mobile Act NAGOYA #2 - 2016/9/30_
+
 ---
 ## 自己紹介
 
@@ -45,7 +47,7 @@ New iPhone Camera Hack!
 * ポートレートモード *※* での被写界深度エフェクト
   * 👉 一眼レフカメラのようなボケを表現
 
-*※ パブリックベータ配信中の iOS 10.1 から利用可能*
+_※ パブリックベータ配信中の iOS 10.1 から利用可能_
 
 ---
 ## そして色再現
@@ -151,7 +153,7 @@ captureSession.addInput(telephotoCameraDevice)
 ## JPEG と RAW
 
 * JPEG
-  * プロ (=) が焼き上げたケーキのようなもの
+  * プロ ( =  ) が焼き上げたケーキのようなもの
   * 再加工には限界がある
   * 誰でも・お手軽・コンパクト
 * RAW
@@ -187,8 +189,9 @@ captureSession.addInput(telephotoCameraDevice)
 * `AVCapturePhotoOutput`
 
 ```swift
-let rawFormat = photoOutput.availableRawPhotoPixelFormatTypes.first!.uint32Value
-let settings = AVCapturePhotoSettings(rawPixelFormatType: rawFormat)
+let types = photoOutput.availableRawPhotoPixelFormatTypes
+let type = types.first!.uint32Value
+let settings = AVCapturePhotoSettings(rawPixelFormatType: type)
 photoOutput.capturePhoto(with: settings, delegate: self)
 ```
 
@@ -200,11 +203,11 @@ photoOutput.capturePhoto(with: settings, delegate: self)
 
 ```swift
 func capture(_ captureOutput: AVCapturePhotoOutput,
-      didFinishProcessingRawPhotoSampleBuffer rawSampleBuffer: CMSampleBuffer?,
-      previewPhotoSampleBuffer: CMSampleBuffer?,
-      resolvedSettings: AVCaptureResolvedPhotoSettings,
-      bracketSettings: AVCaptureBracketedStillImageSettings?,
-      error: Error?) {
+  didFinishProcessingRawPhotoSampleBuffer rawSampleBuffer: CMSampleBuffer?,
+  previewPhotoSampleBuffer: CMSampleBuffer?,
+  resolvedSettings: AVCaptureResolvedPhotoSettings,
+  bracketSettings: AVCaptureBracketedStillImageSettings?,
+  error: Error?) {
 
 }
 ```
@@ -231,9 +234,9 @@ let pixelBuffer = CMSampleBufferGetImageBuffer(rawSampleBuffer!)
 
 ```swift
 // Data?
-let dngData = AVCapturePhotoOutput.dngPhotoDataRepresentation(
-                forRawSampleBuffer: rawSampleBuffer!,
-                previewPhotoSampleBuffer: previewPhotoSampleBuffer)
+let data = AVCapturePhotoOutput.dngPhotoDataRepresentation(
+            forRawSampleBuffer: rawSampleBuffer!,
+            previewPhotoSampleBuffer: previewPhotoSampleBuffer)
 ```
 
 ---
