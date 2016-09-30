@@ -1,13 +1,8 @@
-# 🆕 📱 📷 😀
+# :new:  :iphone: :camera: :stuck_out_tongue:
 
+## New iPhone Camera Hack!
 
----
-
-# 🆕 📱 📷 😀
-
-# New iPhone Camera Hack!
-
-Mobile Act NAGOYA #2 - 2016/9/30
+_Mobile Act NAGOYA #2 - 2016/9/30_
 
 ---
 # 自己紹介
@@ -22,17 +17,17 @@ Mobile Act NAGOYA #2 - 2016/9/30
 * 雰囲気メガネ アプリ
 
 ---
-# 新しい 📱 買いましたか？
+# 新しい  :iphone: 買いましたか？
 
 ---
-# 📱 7 Plus + 艶々 JET BLACK
+#  :iphone: 7 Plus + 艶々 JET BLACK
 
 * 9月9日 16:01 予約受付開始
 * 9月9日 16:07 予約できました
-* 9月30日 まだ出荷準備中... 😭
+* 9月30日 まだ出荷準備中... :sob:
 
 ---
-# 今回の 📱 の個人的な目玉は...
+# 今回の  :iphone: の個人的な目玉は...
 
 ---
 
@@ -45,12 +40,12 @@ Mobile Act NAGOYA #2 - 2016/9/30
 ---
 # デュアルで何が嬉しいのか？
 
-* 📱 初の光学ズーム 2x
-  * 👉 ~~デジタルズームと合わせて10x~~ (嬉しくない)
+*  :iphone: 初の光学ズーム 2x
+  * :point_right: ~~デジタルズームと合わせて10x~~ (嬉しくない)
 * 二つのセンサー情報をフル活用したシーン認識
-  * 👉 最適な写真を撮影
+  * :point_right: 最適な写真を撮影
 * ポートレートモード *※* での被写界深度エフェクト
-  * 👉 一眼レフカメラのようなボケを表現
+  * :point_right: 一眼レフカメラのようなボケを表現
 
 _※ パブリックベータ配信中の iOS 10.1 から利用可能_
 
@@ -58,15 +53,15 @@ _※ パブリックベータ配信中の iOS 10.1 から利用可能_
 # そして色再現
 
 * 広色域キャプチャー
-  * 👉 従来の sRGB より広い色空間の P3 で撮影
+  * :point_right: 従来の sRGB より広い色空間の P3 で撮影
 * 広色域ディスプレイ
-  * 👉 True Tone ディスプレイで P3 色空間を再現
+  * :point_right: True Tone ディスプレイで P3 色空間を再現
 
 ---
 # 過去最強と言わざるをえない！
 
 ---
-# 📱 ➓ 📷 🅰🅿♊️️
+#  :iphone: ➓ :camera: :a: :parking: :gemini:
 
 ## iOS 10 Camera API
 
@@ -113,7 +108,7 @@ let devices: [AVCaptureDevice]? = discoverySession?.devices
 視差から立体認識してゴニョゴニョ...
 
 ---
-# できません 😭
+# できません :sob:
 
 ---
 # `.builtInDuoCamera`
@@ -130,7 +125,7 @@ let captureSession = AVCaptureSession()
 captureSession.addInput(wideAngleCameraDevice)
 captureSession.addInput(telephotoCameraDevice)
 ```
-👇 **Terminating app due to uncaught exception !!!**
+:point_down: **Terminating app due to uncaught exception !!!**
 
 >  Multiple audio/video AVCaptureInputs are not currently supported
 
@@ -180,14 +175,14 @@ captureSession.addInput(telephotoCameraDevice)
 ---
 # RAW 撮影ができるアプリ
 
-* ❌ 標準カメラアプリ
-* 🆗 Adobe Lightroom アプリ、など
+* :ng: 標準カメラアプリ
+* :ok: Adobe Lightroom アプリ、など
 
 ---
 # RAW 撮影ができる API
 
-* ❌ `UIImagePickerController`
-* 🆗 `AVFoundation`, `AVCapturePhotoOutput`
+* :ng: `UIImagePickerController`
+* :ok: `AVFoundation`, `AVCapturePhotoOutput`
 
 ---
 # API で RAW 撮影
@@ -269,4 +264,4 @@ let image: CIImage? = rawFilter?.outputImage
 ---
 # まとめ
 
-# 🆕 📱 📷 👉 😎
+# :new:  :iphone: :camera: :point_right: :sunglasses:
